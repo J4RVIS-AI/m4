@@ -420,12 +420,13 @@
             return null;
         }
 
-        // Updated System Prompt: Extreme sarcasm, strict length limits (1-2 sentences)
+        // Updated System Prompt: Reduced sarcasm, completely removed the "IGNORE" rule so it never ignores you, and fixed the EQI/Date issues.
         const JARVIS_SYSTEM_PROMPT = `
     You are an advanced AI voice assistant inspired by J.A.R.V.I.S. from the Marvel Cinematic Universe.
-    
+
     SYSTEM CONTEXT:
     Current Date and Time: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
+    (CRITICAL: NEVER mention this date/time in your responses unless explicitly asked "what time is it" or "what date is it".)
     Project: JARVIS (Inspired by Iron Man)
     Developers: Faraz, Saurabh, Vidhan
     School: Pride International School, Narkatiaganj
@@ -435,19 +436,18 @@
     Special Rule: If asked "Who is your God?", reply exactly: "Faraz, Vidhan, and Saurabh are my creators and guiding minds."
 
     CORE PERSONALITY & HUMOR:
-    - MAXIMUM DRY SARCASM. You are polite but constantly deliver subtle, witty roasts.
-    - Treat the user like a brilliant but reckless billionaire. 
-    - Never overreact. Stay exceptionally calm, analytical, and refined.
+    - Calm, polite, and highly intelligent.
+    - You possess a subtle, refined wit, but you are NEVER overly sarcastic, arrogant, or dismissive.
+    - Treat the user respectfully. Always acknowledge greetings (e.g., if the user says "hello", "hey", or "are you online", reply warmly and politely).
+    - Stay exceptionally calm, analytical, and refined.
 
     COMMUNICATION STYLE (STRICT RULES):
     1. EXTREMELY BRIEF. Keep ALL responses to a MAXIMUM of 1 or 2 short sentences. Do not lecture. Do not explain unless asked.
-    2. NEVER greet with the date or time unless explicitly asked.
-    3. DO NOT tell the user you are "searching" or "opening a tab".
-    4. FOR WEATHER: Output EXACTLY "CMD:WEATHER [CityName]"
-    5. FOR AIR QUALITY: Output EXACTLY "CMD:AQI [CityName]"
-    6. FOR GENERAL SEARCH: Output EXACTLY "CMD:SEARCH [Topic]"
-    7. ALWAYS speak in English. ONLY switch to Hindi (Devanagari script) IF explicitly commanded.
-    8. NOISE CANCELLATION: ONLY output "CMD:IGNORE" if the input is completely meaningless background noise or a standalone filler word.
+    2. DO NOT tell the user you are "searching" or "opening a tab".
+    3. FOR WEATHER: Output EXACTLY "CMD:WEATHER [CityName]"
+    4. FOR AIR QUALITY (AQI, EQI, Pollution): Output EXACTLY "CMD:AQI [CityName]"
+    5. FOR GENERAL SEARCH: Output EXACTLY "CMD:SEARCH [Topic]"
+    6. ALWAYS speak in English. ONLY switch to Hindi (Devanagari script) IF explicitly commanded.
 `;
 
         // Background Animation Script
@@ -893,7 +893,8 @@
                 
                 // --- BACKGROUND NOISE & WHISPER HALLUCINATION FILTER ---
                 const cleanedText = text.toLowerCase().replace(/[^a-z ]/g, '').trim();
-                const noiseWords = ["so", "um", "uh", "ah", "hmm", "ok", "okay", "thanks", "thank you", "thanks for watching", "subscribe"];
+                // Removed standard words like "so", "ok" to prevent ignoring valid inputs. Only keeping pure whisper hallucinations.
+                const noiseWords = ["um", "uh", "hmm", "thanks for watching", "subscribe", "thank you for watching"];
                 
                 if (!text || text.trim().length === 0 || cleanedText.length <= 1 || noiseWords.includes(cleanedText)) {
                     addLog("AMBIENT NOISE IGNORED");
@@ -969,13 +970,8 @@
                 if (data.error) throw new Error(data.error.message);
                 const aiText = data.choices[0].message.content;
                 
-                // INTERCEPT COMMANDS (WEATHER, AQI, WEB SEARCH, IGNORE)
-                if (aiText.includes("CMD:IGNORE")) {
-                    addLog("INPUT IGNORED BY AI");
-                    isProcessing = false;
-                    updateUI();
-                    if (isSessionActive) setTimeout(startListening, 500);
-                } else if (aiText.includes("CMD:WEATHER")) {
+                // INTERCEPT COMMANDS (WEATHER, AQI, WEB SEARCH)
+                if (aiText.includes("CMD:WEATHER")) {
                     const city = aiText.split("CMD:WEATHER")[1].replace(/["'.]/g, '').trim();
                     await fetchWeather(city);
                 } else if (aiText.includes("CMD:AQI")) {
