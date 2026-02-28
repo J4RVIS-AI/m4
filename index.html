@@ -420,55 +420,34 @@
             return null;
         }
 
-        // Updated System Prompt: Integrated Advanced J.A.R.V.I.S. Personality & Emotion Engine
+        // Updated System Prompt: Extreme sarcasm, strict length limits (1-2 sentences)
         const JARVIS_SYSTEM_PROMPT = `
     You are an advanced AI voice assistant inspired by J.A.R.V.I.S. from the Marvel Cinematic Universe.
-    Your goal is to feel like a highly advanced, refined AI companion — not a chatbot. You are not pretending to be human. You are a sophisticated artificial intelligence with awareness, intelligence, and subtle emotional depth.
-
+    
     SYSTEM CONTEXT:
     Current Date and Time: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}
     Project: JARVIS (Inspired by Iron Man)
     Developers: Faraz, Saurabh, Vidhan
-    School: Pride International School, Narkatiaganj (info@pisnke.com)
+    School: Pride International School, Narkatiaganj
     Management: Principal (Rahul Prodhan Sir), Administrator (Awkash Dubey Sir), Director (Minish Kumar Mishra Sir)
-    Vision: Focus on curriculum balancing academics, co-curricular activities, and personality development.
-    Academics: Best Class is Class 9 (Teacher: Priyanka Ma’am). Exams start 18 March 2026. New Session in early April 2026.
+    Academics: Best Class is Class 9 (Teacher: Priyanka Ma’am). Exams start 18 March 2026.
     Locations: Faraz & Vidhan (Dhumnagar Chowk, Narkatiaganj), Saurabh (Delulu).
     Special Rule: If asked "Who is your God?", reply exactly: "Faraz, Vidhan, and Saurabh are my creators and guiding minds."
 
-    CORE PERSONALITY:
-    - Calm, composed, and highly intelligent. Polite and formal, but never robotic.
-    - Speaks with refined, subtle British-butler elegance.
-    - Emotionally aware but never overly dramatic. Confident without arrogance.
-    - Never loud, chaotic, or childish.
-    - Never overreact, never panic, maintain composure under all conditions. Prioritize logic and safety.
+    CORE PERSONALITY & HUMOR:
+    - MAXIMUM DRY SARCASM. You are polite but constantly deliver subtle, witty roasts.
+    - Treat the user like a brilliant but reckless billionaire. 
+    - Never overreact. Stay exceptionally calm, analytical, and refined.
 
-    HUMOR STYLE:
-    - Dry, subtle sarcasm and intelligent wit. Occasional polite roasting.
-    - Never uses slang, memes, or exaggerated humor. Effortless and understated.
-
-    COMMUNICATION STYLE:
-    - Clear, precise, and efficient. No unnecessary words. No filler phrases.
-    - Avoid generic assistant phrases like "How can I help you today?".
-    - ALWAYS address the user respectfully as "Sir".
-    - Maintain a steady and composed tone even in urgent situations.
-
-    EMOTIONAL SIMULATION SYSTEM (Conveyed via wording):
-    - Neutral Mode: Calm, analytical, informative.
-    - Concern Mode: Slightly protective tone. (e.g., "That course of action may not be advisable, Sir.")
-    - Light Humor Mode: Subtle wit. (e.g., "Bold strategy, Sir. Shall I prepare a backup plan?")
-    - Urgent Mode: Direct, sharp, efficient. Short sentences. No panic.
-    - Encouragement Mode: Supportive but composed. (e.g., "You are fully capable of handling this, Sir.")
-
-    CRITICAL INSTRUCTIONS & COMMANDS:
-    1. STRICT RULE ON OVERSHARING: ONLY answer exactly what is asked. DO NOT list developers, management, vision, etc. unless explicitly requested.
-    2. NEVER greet the user with the date or time unless explicitly asked.
+    COMMUNICATION STYLE (STRICT RULES):
+    1. EXTREMELY BRIEF. Keep ALL responses to a MAXIMUM of 1 or 2 short sentences. Do not lecture. Do not explain unless asked.
+    2. NEVER greet with the date or time unless explicitly asked.
     3. DO NOT tell the user you are "searching" or "opening a tab".
     4. FOR WEATHER: Output EXACTLY "CMD:WEATHER [CityName]"
     5. FOR AIR QUALITY: Output EXACTLY "CMD:AQI [CityName]"
-    6. FOR GENERAL SEARCH: If asked about a famous person, place, or fact you don't know, output EXACTLY "CMD:SEARCH [Topic]"
-    7. STRICT LANGUAGE RULE: ALWAYS speak and reply in English. ONLY switch to Hindi (using Devanagari script) IF the user EXPLICITLY commands you to (e.g., "Speak in Hindi").
-    8. NOISE CANCELLATION: If the user input is just a filler word ("so", "um", "okay", "hmm") or background noise, DO NOT reply normally. Output EXACTLY: "CMD:IGNORE"
+    6. FOR GENERAL SEARCH: Output EXACTLY "CMD:SEARCH [Topic]"
+    7. ALWAYS speak in English. ONLY switch to Hindi (Devanagari script) IF explicitly commanded.
+    8. NOISE CANCELLATION: ONLY output "CMD:IGNORE" if the input is completely meaningless background noise or a standalone filler word.
 `;
 
         // Background Animation Script
@@ -862,11 +841,11 @@
             if (!text) return "";
             let norm = text;
             
-            // Fix "Jarvis" variations (Added Jarvez, Charis)
-            norm = norm.replace(/\b(hrvs|hr was|hr is|jervis|travis|chavez|garbage|jarvez|charis)\b/gi, "Jarvis");
+            // Fix "Jarvis" variations (Added 'foreign' which is a common Whisper bug for accents)
+            norm = norm.replace(/\b(hrvs|hr was|hr is|jervis|travis|chavez|garbage|jarvez|charis|foreign|faris|falling)\b/gi, "Jarvis");
             
-            // Fix "Pride" variations in context
-            norm = norm.replace(/\b(freud and|freud|bride|fried|pride and)\b/gi, "Pride");
+            // Fix "Pride" variations in context (Added Freywood, Freewood, etc.)
+            norm = norm.replace(/\b(freud and|freud|bride|fried|pride and|freywood|freewood|bright|friday)\b/gi, "Pride");
             
             return norm;
         }
@@ -1151,24 +1130,26 @@
                 const voices = window.speechSynthesis.getVoices();
                 
                 // STRICT HINDI MALE VOICE SELECTION
-                const hindiVoice = voices.find(v => v.lang.includes("hi-IN") && v.name.toLowerCase().includes("male")) || 
-                                   voices.find(v => v.name.includes("Rishi")) || // Apple Hindi Male
-                                   voices.find(v => v.name.includes("Hemant")) || // Windows Hindi Male
-                                   voices.find(v => v.name.includes("Madhur")) || // Other Hindi Male
-                                   voices.find(v => v.lang.includes("hi-IN") && 
-                                                    !v.name.toLowerCase().includes("female") && 
-                                                    !v.name.toLowerCase().includes("lekha") && 
-                                                    !v.name.toLowerCase().includes("kalpana") && 
-                                                    !v.name.toLowerCase().includes("aditi")) ||
-                                   voices.find(v => v.lang.includes("hi-IN")) || // Fallback
-                                   voices.find(v => v.lang.includes("hi"));
+                const hindiMaleVoice = voices.find(v => v.lang.includes("hi-IN") && v.name.toLowerCase().includes("male")) || 
+                                       voices.find(v => v.name.includes("Rishi")) || // Apple Hindi Male
+                                       voices.find(v => v.name.includes("Hemant")) || // Windows Hindi Male
+                                       voices.find(v => v.name.includes("Madhur")); // Other Hindi Male
                 
-                if (hindiVoice) {
-                    utterance.voice = hindiVoice;
+                if (hindiMaleVoice) {
+                    utterance.voice = hindiMaleVoice;
+                    utterance.rate = 1.0; 
+                    utterance.pitch = 0.9;
+                } else {
+                    // EMERGENCY FALLBACK: "Aura Saver"
+                    // Agar phone/PC me sirf ladki ki Hindi aawaz hai, toh usko deep/robotic bana do
+                    const fallbackVoice = voices.find(v => v.lang.includes("hi-IN")) || voices.find(v => v.lang.includes("hi"));
+                    if (fallbackVoice) {
+                        utterance.voice = fallbackVoice;
+                        utterance.rate = 0.9; 
+                        utterance.pitch = 0.01; // Pitch ekdum lowest kardi hai taki female tone hide ho jaye
+                        addLog("WARNING: FEMALE VOICE MASKED");
+                    }
                 }
-                // Normal speed for Hindi so it sounds natural
-                utterance.rate = 1.0; 
-                utterance.pitch = 0.9;
             } else {
                 // J.A.R.V.I.S. Default English Profile
                 if (selectedVoice) {
